@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import time
 import numpy as np
-import utils_train.log as log
+from . import log
 
 
 class Trainer(object):
