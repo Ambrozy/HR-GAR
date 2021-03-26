@@ -16,6 +16,7 @@ class Trainer(object):
         self.bce_loss = nn.BCELoss()
         self.mse = nn.MSELoss()
         self.gan_lambda = 1e-2
+        self.img_lambda = 1
 
     def __calc_d_out_shape(self, dataloader):
         hr_batch_images = next(iter(dataloader))[1].to(self.device)
@@ -47,7 +48,7 @@ class Trainer(object):
         params = {}
 
         y_real_full = torch.full(self.d_out_shape, 1., dtype=torch.float, device=self.device)
-        y_fake_full = torch.full(self.d_out_shape, 1., dtype=torch.float, device=self.device)
+        y_fake_full = torch.full(self.d_out_shape, 0., dtype=torch.float, device=self.device)
 
         for batch_idx, (x_images, y_images) in enumerate(dataloader):
             x_images, y_images = x_images.to(self.device), y_images.to(self.device)
@@ -103,7 +104,7 @@ class Trainer(object):
     def generator_loss(self, y_img_true, y_img_pred, y_dis_true, y_dis_pred):
         loss1 = self.mse(y_img_pred, y_img_true)
         loss2 = self.bce_loss(y_dis_pred, y_dis_true)
-        loss = loss1 + self.gan_lambda * loss2
+        loss = self.img_lambda * loss1 + self.gan_lambda * loss2
         return loss, {'loss': loss.item(), 'img_loss': loss1.item(), 'g_loss': loss2.item()}
 
     def generator_metrics(self, y_img_true, y_img_pred, y_dis_true, y_dis_pred):
